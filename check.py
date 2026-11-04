@@ -36,6 +36,12 @@ if not sailings:
     push("Irish Ferries: controllo non riuscito", "Nessuna partenza trovata, la pagina potrebbe essere cambiata.\n" + URL)
     sys.exit(1)
 
+# Proof the page was really read: page size, sailings found, the 16:30 ones.
+print(f"pagina letta: {len(raw)} caratteri, {len(sailings)} partenze")
+for k, v in sailings.items():
+    if k.endswith(" 16:30"):
+        print(f"  16:30 → {k}: {v['status']}, {v['ship']}, arrivo {v['arrival']}")
+
 old = json.loads(STATE.read_text()) if STATE.exists() else None
 STATE.write_text(json.dumps(sailings, indent=1))
 

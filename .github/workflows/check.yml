@@ -6,7 +6,6 @@ on:
 permissions:
   contents: write
   actions: write
-concurrency: check
 jobs:
   check:
     runs-on: ubuntu-latest

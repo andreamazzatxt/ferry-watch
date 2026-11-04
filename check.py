@@ -94,6 +94,11 @@ for k, v in sailings.items():
     if k.endswith(" 16:30"):
         print(f"  16:30 → {k}: {v['status']}, {v['ship']}, arrivo {v['arrival']}")
 
+# Tell the workflow loop to stop once the sailing has left.
+w = sailings.get(WATCH)
+if (w and w["status"] == "Departed") or (not w and time.time() > 1793986200):  # 2026-11-05 17:30 UTC
+    print("PARTITO")
+
 old = json.loads(STATE.read_text()) if STATE.exists() else None
 STATE.write_text(json.dumps(sailings, indent=1))
 

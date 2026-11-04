@@ -1,25 +1,31 @@
 name: check
+# GitHub's cron never fired on this repo, so one run loops every 30 min for
+# ~5.5 h (job limit is 6 h) and then dispatches the next one, until departure.
 on:
-  schedule:
-    - cron: "13,43 * * * *"
   workflow_dispatch:
 permissions:
   contents: write
+  actions: write
 concurrency: check
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
-      - run: python3 -I check.py
+      - name: Watch
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
-      - name: Save state
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git diff --quiet state.json && exit 0
           git config user.name "Andrea Mazza"
           git config user.email "andreamazzatxt@users.noreply.github.com"
-          git commit -qm "state" state.json
-          git push -q
+          for i in $(seq 1 11); do
+            date -u
+            python3 -I check.py | tee out.txt || true
+            if ! git diff --quiet state.json; then git commit -qm "state" state.json && git push -q; fi
+            grep -q PARTITO out.txt && { echo "partito, fine"; exit 0; }
+            [ "$i" -lt 11 ] && sleep 1800
+          done
+          gh workflow run check.yml --ref main

@@ -78,3 +78,7 @@ if changes:
     push("Irish Ferries: cambiamento", "\n".join(changes) + "\n" + URL)
 else:
     print("NESSUN CAMBIAMENTO")
+    # Requested: a "tutto ok" on every check too, until the sailing has left.
+    v = sailings.get(WATCH)
+    if v and v["status"] != "Departed":
+        push("Irish Ferries: tutto ok", f"{WATCH} → {v['status']}, {v['ship']}, arrivo {v['arrival']}")

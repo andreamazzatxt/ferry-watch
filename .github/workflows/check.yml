@@ -1,0 +1,22 @@
+name: check
+on:
+  schedule:
+    - cron: "13,43 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: check
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -I check.py
+      - name: Save state
+        run: |
+          git diff --quiet state.json && exit 0
+          git config user.name "Andrea Mazza"
+          git config user.email "andreamazzatxt@users.noreply.github.com"
+          git commit -qm "state" state.json
+          git push -q

@@ -13,6 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 -I check.py
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
       - name: Save state
         run: |
           git diff --quiet state.json && exit 0

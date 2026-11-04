@@ -1,6 +1,6 @@
 # Irish Ferries Ireland/France sailing updates: extract sailings, diff with the
 # previous run (state.json next to this script), print changes.
-import html, json, re, sys, urllib.request
+import html, json, os, re, sys, urllib.parse, urllib.request
 from pathlib import Path
 
 URL = "https://www.irishferries.com/ie-en/sailing-updates/ireland-france/"
@@ -9,9 +9,15 @@ TOPIC = Path(__file__).with_name("topic").read_text().strip()
 
 
 def push(title, body):
-    # ntfy.sh push → the ntfy app on the iPhone, subscribed to TOPIC.
+    # Telegram (Mnemo's bot) when TG_TOKEN/TG_CHAT are set, else ntfy.sh.
+    token, chat = os.environ.get("TG_TOKEN"), os.environ.get("TG_CHAT")
+    if token and chat:
+        data = urllib.parse.urlencode({"chat_id": chat, "text": f"⛴ {title}\n{body}", "disable_web_page_preview": "true"})
+        urllib.request.urlopen(f"https://api.telegram.org/bot{token}/sendMessage", data.encode(), timeout=20)
+        return
     r = urllib.request.Request(f"https://ntfy.sh/{TOPIC}", data=body.encode(), headers={"Title": title, "Priority": "high", "Tags": "ferry"})
     urllib.request.urlopen(r, timeout=20)
+
 
 req = urllib.request.Request(URL, headers={"User-Agent": "Mozilla/5.0"})
 raw = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "ignore")

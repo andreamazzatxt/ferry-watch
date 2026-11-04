@@ -5,6 +5,7 @@ from pathlib import Path
 
 URL = "https://www.irishferries.com/ie-en/sailing-updates/ireland-france/"
 STATE = Path(__file__).with_name("state.json")
+WATCH = "Dublin - Cherbourg 05/11/26 16:30"  # the only sailing that triggers alerts
 TOPIC = Path(__file__).with_name("topic").read_text().strip()
 
 
@@ -66,6 +67,11 @@ shown_dates = {k.split()[3] for k in sailings}
 for k in old:
     if k not in sailings and k.split()[3] in shown_dates:
         changes.append(f"SPARITA {k} (era {old[k]['status']})")
+
+changes = [c for c in changes if WATCH in c]
+if WATCH in sailings and "--test" in sys.argv:
+    v = sailings[WATCH]
+    push("Irish Ferries: controllo attivo", f"{WATCH} → {v['status']}, {v['ship']}, arrivo {v['arrival']}\n{URL}")
 
 if changes:
     print("CAMBIAMENTI:\n  " + "\n  ".join(changes))
